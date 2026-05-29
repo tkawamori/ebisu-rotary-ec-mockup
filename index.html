@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>恵比寿ロータリークラブ 会員向けEC モックアップ</title>
+<style>
+  :root {
+    color-scheme: light;
+    --rotary-blue: #17458F;
+    --rotary-blue-dark: #0E2E63;
+    --rotary-blue-light: #E8EEF8;
+    --rotary-gold: #F7A81B;
+    --rotary-gold-dark: #C98800;
+    --bg: #F7F8FB;
+    --text: #1B1B1B;
+    --text-sub: #555;
+    --border: #DCDFE6;
+    --white: #FFFFFF;
+    --success: #2E8B57;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { font-family: "Hiragino Kaku Gothic ProN", "Yu Gothic UI", "Meiryo", sans-serif; color: var(--text); background: var(--bg); font-size: 18px; line-height: 1.6; }
+
+  /* ---- 画面切替セレクタ (モック用) ---- */
+  .screen-switcher {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+    background: #222; color: #fff; padding: 10px 16px;
+    display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+    font-size: 14px;
+  }
+  .screen-switcher .label { font-weight: bold; margin-right: 8px; color: var(--rotary-gold); }
+  .screen-switcher button {
+    background: #444; color: #fff; border: 1px solid #666;
+    padding: 8px 14px; border-radius: 6px; cursor: pointer; font-size: 14px;
+  }
+  .screen-switcher button.active { background: var(--rotary-gold); color: #222; border-color: var(--rotary-gold); font-weight: bold; }
+
+  body { padding-top: 56px; }
+
+  /* ---- アプリヘッダー ---- */
+  .app-header {
+    background: var(--rotary-blue);
+    color: var(--white);
+    padding: 16px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 4px solid var(--rotary-gold);
+  }
+  .app-header .brand { display: flex; align-items: center; gap: 14px; }
+  .app-header .logo {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: var(--rotary-gold); color: var(--rotary-blue-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 20px;
+  }
+  .app-header h1 { font-size: 22px; font-weight: 700; }
+  .app-header .sub { font-size: 14px; opacity: 0.85; }
+  .app-header .user-info { font-size: 16px; display: flex; gap: 12px; align-items: center; }
+  .app-header .user-info .badge {
+    background: var(--rotary-gold); color: var(--rotary-blue-dark);
+    padding: 4px 10px; border-radius: 20px; font-weight: bold; font-size: 14px;
+  }
+
+  /* ---- ニコニコ支援金バー ---- */
+  .niconico-bar {
+    background: linear-gradient(90deg, var(--rotary-gold) 0%, #FFC857 100%);
+    color: var(--rotary-blue-dark); padding: 12px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid var(--rotary-gold-dark); font-weight: 600;
+  }
+  .niconico-bar .left { display: flex; align-items: center; gap: 10px; font-size: 17px; }
+  .niconico-bar .amount { font-size: 22px; font-weight: bold; }
+
+  /* ---- メイン共通 ---- */
+  .screen { display: none; padding: 24px 28px 80px; min-height: calc(100vh - 56px); }
+  .screen.active { display: block; }
+  .screen-title { font-size: 24px; font-weight: 700; color: var(--rotary-blue); margin-bottom: 6px; }
+  .screen-desc { color: var(--text-sub); margin-bottom: 24px; font-size: 16px; }
+
+  /* ---- 商品一覧 ---- */
+  .product-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+  .product-card {
+    background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; transition: transform .15s, box-shadow .15s; cursor: pointer;
+    display: flex; flex-direction: column;
+  }
+  .product-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.08); border-color: var(--rotary-blue); }
+  .product-image {
+    height: 180px; display: flex; align-items: center; justify-content: center;
+    font-size: 64px; background: var(--rotary-blue-light); color: var(--rotary-blue);
+  }
+  .product-body { padding: 16px; flex: 1; display: flex; flex-direction: column; }
+  .product-name { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+  .product-donor { font-size: 14px; color: var(--text-sub); margin-bottom: 12px; }
+  .product-donor .pill {
+    display: inline-block; background: var(--rotary-blue-light); color: var(--rotary-blue);
+    padding: 2px 8px; border-radius: 10px; font-weight: 600; font-size: 12px; margin-right: 4px;
+  }
+  .product-price { font-size: 22px; font-weight: 700; color: var(--rotary-blue); margin-top: auto; }
+  .product-price .donation {
+    display: block; font-size: 13px; color: var(--rotary-gold-dark); font-weight: 600; margin-top: 4px;
+  }
+  .product-card button {
+    background: var(--rotary-blue); color: #fff; border: 0; padding: 14px;
+    font-size: 17px; font-weight: 700; cursor: pointer; width: 100%;
+  }
+  .product-card button:hover { background: var(--rotary-blue-dark); }
+
+  /* ---- カート (右ペイン) ---- */
+  .layout-with-cart { display: grid; grid-template-columns: 1fr 360px; gap: 24px; }
+  .cart-panel {
+    background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px; position: sticky; top: 80px; align-self: start;
+  }
+  .cart-panel h3 { font-size: 18px; color: var(--rotary-blue); margin-bottom: 14px; border-bottom: 2px solid var(--rotary-gold); padding-bottom: 8px; }
+  .cart-item { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border); font-size: 15px; }
+  .cart-total { margin-top: 14px; padding-top: 12px; border-top: 2px solid var(--rotary-blue); font-weight: bold; }
+  .cart-total .row { display: flex; justify-content: space-between; padding: 4px 0; }
+  .cart-total .row.donation { color: var(--rotary-gold-dark); }
+  .cart-total .row.grand { font-size: 20px; color: var(--rotary-blue); margin-top: 6px; }
+  .btn-primary { background: var(--rotary-blue); color: #fff; border: 0; padding: 16px; font-size: 18px; font-weight: 700; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 14px; }
+  .btn-primary:hover { background: var(--rotary-blue-dark); }
+  .btn-secondary { background: #fff; color: var(--rotary-blue); border: 2px solid var(--rotary-blue); padding: 14px; font-size: 17px; font-weight: 700; border-radius: 8px; cursor: pointer; width: 100%; margin-top: 8px; }
+
+  /* ---- 商品詳細 / 購入確認 ---- */
+  .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+  .detail-image {
+    height: 360px; display: flex; align-items: center; justify-content: center;
+    font-size: 140px; background: var(--rotary-blue-light); color: var(--rotary-blue);
+    border-radius: 12px;
+  }
+  .detail-info h2 { font-size: 28px; color: var(--text); margin-bottom: 12px; }
+  .detail-info .donor { color: var(--text-sub); margin-bottom: 16px; font-size: 16px; }
+  .detail-info .price { font-size: 36px; color: var(--rotary-blue); font-weight: bold; margin: 16px 0; }
+  .detail-info .donation-callout {
+    background: linear-gradient(90deg, #FFF4D9, #FFE4A8);
+    border-left: 4px solid var(--rotary-gold); padding: 14px 18px; border-radius: 6px; margin: 16px 0;
+    font-size: 15px;
+  }
+  .detail-info .donation-callout strong { color: var(--rotary-gold-dark); font-size: 18px; }
+  .detail-info .description { color: var(--text-sub); line-height: 1.8; margin: 16px 0; }
+
+  textarea, input[type="text"], input[type="tel"], input[type="number"], input[type="email"], select {
+    width: 100%; padding: 14px; font-size: 17px; border: 2px solid var(--border); border-radius: 8px;
+    font-family: inherit; background: #fff;
+  }
+  textarea:focus, input:focus, select:focus { outline: none; border-color: var(--rotary-blue); }
+  label { display: block; font-weight: 600; margin: 16px 0 6px; font-size: 16px; }
+  label .required { color: #C0392B; margin-left: 4px; }
+
+  .quantity { display: inline-flex; align-items: center; border: 2px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .quantity button { width: 48px; height: 48px; background: var(--rotary-blue-light); border: 0; font-size: 22px; cursor: pointer; color: var(--rotary-blue); font-weight: bold; }
+  .quantity span { padding: 0 24px; font-size: 20px; font-weight: bold; min-width: 60px; text-align: center; }
+
+  /* ---- 購入確認 ---- */
+  .confirm-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 720px; margin: 0 auto;
+  }
+  .confirm-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 17px; }
+  .confirm-row .label { color: var(--text-sub); }
+  .confirm-row.total { font-size: 22px; font-weight: bold; color: var(--rotary-blue); border: 0; padding-top: 20px; }
+  .comment-box { background: var(--rotary-blue-light); padding: 16px; border-radius: 8px; margin: 16px 0; font-style: italic; color: var(--rotary-blue-dark); }
+
+  /* ---- 運営: 会員入力 ---- */
+  .form-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 28px; max-width: 720px; }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .member-search {
+    background: var(--rotary-blue-light); padding: 16px; border-radius: 8px; margin-bottom: 20px;
+    display: flex; gap: 12px; align-items: end;
+  }
+  .member-search input { flex: 1; }
+  .member-list { margin-top: 12px; }
+  .member-item {
+    background: #fff; padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px;
+    margin-bottom: 6px; display: flex; justify-content: space-between; cursor: pointer; align-items: center;
+  }
+  .member-item:hover { background: var(--rotary-blue-light); border-color: var(--rotary-blue); }
+  .member-item .member-name { font-weight: 600; }
+  .member-item .member-meta { color: var(--text-sub); font-size: 14px; }
+
+  /* ---- 運営: ダッシュボード ---- */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .stat-card { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .stat-card.gold { border-top: 4px solid var(--rotary-gold); }
+  .stat-card.blue { border-top: 4px solid var(--rotary-blue); }
+  .stat-card .stat-label { color: var(--text-sub); font-size: 14px; margin-bottom: 6px; }
+  .stat-card .stat-value { font-size: 30px; font-weight: bold; color: var(--rotary-blue); }
+  .stat-card.gold .stat-value { color: var(--rotary-gold-dark); }
+  .stat-card .stat-sub { font-size: 13px; color: var(--text-sub); margin-top: 4px; }
+
+  .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 24px; }
+  .panel { background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+  .panel h3 { font-size: 18px; color: var(--rotary-blue); margin-bottom: 14px; border-bottom: 2px solid var(--rotary-gold); padding-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+  .panel h3 .small-btn { background: var(--rotary-blue); color: #fff; border: 0; padding: 6px 12px; font-size: 13px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 8px; text-align: left; border-bottom: 1px solid var(--border); font-size: 14px; }
+  th { background: var(--rotary-blue-light); color: var(--rotary-blue); font-weight: 700; }
+  td .money { font-weight: 600; }
+  td .donation-cell { color: var(--rotary-gold-dark); font-weight: 600; }
+
+  .donation-progress {
+    background: linear-gradient(135deg, var(--rotary-blue), var(--rotary-blue-dark));
+    color: #fff; padding: 24px; border-radius: 12px; text-align: center;
+  }
+  .donation-progress .amount { font-size: 42px; font-weight: bold; color: var(--rotary-gold); }
+  .donation-progress .label { font-size: 14px; opacity: 0.9; }
+  .progress-bar { background: rgba(255,255,255,0.2); height: 12px; border-radius: 6px; overflow: hidden; margin: 16px 0 8px; }
+  .progress-bar .fill { background: var(--rotary-gold); height: 100%; width: 64%; }
+
+  .comments-list .comment-item {
+    background: var(--rotary-blue-light); padding: 12px 14px; border-radius: 8px; margin-bottom: 8px;
+    border-left: 3px solid var(--rotary-gold);
+  }
+  .comments-list .comment-meta { font-size: 13px; color: var(--text-sub); margin-bottom: 4px; }
+  .comments-list .comment-text { font-size: 15px; color: var(--text); }
+
+  /* ---- モーダル風セクションタイトル ---- */
+  .section { margin-bottom: 28px; }
+  .section-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; }
+  .section-head h3 { font-size: 20px; color: var(--rotary-blue); }
+
+  /* ---- アクションボタン群 ---- */
+  .actions-row { display: flex; gap: 12px; margin-top: 24px; }
+  .actions-row .btn-primary, .actions-row .btn-secondary { margin: 0; }
+
+  @media (max-width: 900px) {
+    .layout-with-cart, .detail-grid, .dashboard-grid, .form-row-2 { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- 画面切替 (モック用) -->
+<div class="screen-switcher">
+  <span class="label">[モック画面切替]</span>
+  <button class="active" onclick="showScreen('s1', this)">① 商品一覧</button>
+  <button onclick="showScreen('s2', this)">② 商品詳細</button>
+  <button onclick="showScreen('s3', this)">③ カート/購入確認</button>
+  <button onclick="showScreen('s4', this)">④ 運営: 会員情報入力</button>
+  <button onclick="showScreen('s5', this)">⑤ 運営: ダッシュボード</button>
+</div>
+
+<!-- 共通ヘッダー -->
+<header class="app-header">
+  <div class="brand">
+    <div class="logo">RC</div>
+    <div>
+      <h1>恵比寿ロータリークラブ 会員ショップ</h1>
+      <div class="sub">2026年5月29日 例会</div>
+    </div>
+  </div>
+  <div class="user-info">
+    <span class="badge">会員番号 #128</span>
+    <span>山田 太郎 様</span>
+  </div>
+</header>
+
+<!-- ニコニコ支援金バー -->
+<div class="niconico-bar">
+  <div class="left">
+    <span>♥</span>
+    <span>本日のニコニコ支援金累計</span>
+  </div>
+  <div class="amount">¥ 32,400</div>
+</div>
+
+<!-- =============== ① 商品一覧 =============== -->
+<main id="s1" class="screen active">
+  <div class="layout-with-cart">
+    <div>
+      <h2 class="screen-title">商品一覧</h2>
+      <p class="screen-desc">気になる商品をタップしてカートに追加してください。売上の一部はニコニコ支援金として恵比寿ロータリークラブに寄付されます。</p>
+      <div class="product-grid">
+        <!-- 商品カード × 10 -->
+        <div class="product-card" onclick="showScreen('s2', document.querySelectorAll('.screen-switcher button')[1])">
+          <div class="product-image">🍷</div>
+          <div class="product-body">
+            <div class="product-name">山梨産 赤ワイン 2022</div>
+            <div class="product-donor"><span class="pill">提供</span>佐藤 一郎 会員</div>
+            <div class="product-price">¥ 3,800<span class="donation">うち ¥380 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🍵</div>
+          <div class="product-body">
+            <div class="product-name">宇治抹茶 詰合せ</div>
+            <div class="product-donor"><span class="pill">提供</span>鈴木 花子 会員</div>
+            <div class="product-price">¥ 2,500<span class="donation">うち ¥250 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🍶</div>
+          <div class="product-body">
+            <div class="product-name">純米大吟醸 720ml</div>
+            <div class="product-donor"><span class="pill">提供</span>田中 健一 会員</div>
+            <div class="product-price">¥ 5,000<span class="donation">うち ¥500 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🎂</div>
+          <div class="product-body">
+            <div class="product-name">手作り焼菓子セット</div>
+            <div class="product-donor"><span class="pill">提供</span>高橋 美咲 会員</div>
+            <div class="product-price">¥ 1,800<span class="donation">うち ¥180 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🌹</div>
+          <div class="product-body">
+            <div class="product-name">季節のお花アレンジ</div>
+            <div class="product-donor"><span class="pill">提供</span>渡辺 雅人 会員</div>
+            <div class="product-price">¥ 4,500<span class="donation">うち ¥450 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">📖</div>
+          <div class="product-body">
+            <div class="product-name">著書「経営の心得」</div>
+            <div class="product-donor"><span class="pill">提供</span>伊藤 博文 会員</div>
+            <div class="product-price">¥ 2,200<span class="donation">うち ¥220 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🧣</div>
+          <div class="product-body">
+            <div class="product-name">シルクスカーフ</div>
+            <div class="product-donor"><span class="pill">提供</span>小林 香織 会員</div>
+            <div class="product-price">¥ 6,800<span class="donation">うち ¥680 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🍯</div>
+          <div class="product-body">
+            <div class="product-name">国産はちみつ 3本セット</div>
+            <div class="product-donor"><span class="pill">提供</span>中村 賢治 会員</div>
+            <div class="product-price">¥ 3,200<span class="donation">うち ¥320 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">🎨</div>
+          <div class="product-body">
+            <div class="product-name">水彩画オリジナル作品</div>
+            <div class="product-donor"><span class="pill">提供</span>松本 久子 会員</div>
+            <div class="product-price">¥ 12,000<span class="donation">うち ¥1,200 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+        <div class="product-card">
+          <div class="product-image">☕</div>
+          <div class="product-body">
+            <div class="product-name">スペシャルティ珈琲豆</div>
+            <div class="product-donor"><span class="pill">提供</span>木村 拓也 会員</div>
+            <div class="product-price">¥ 2,800<span class="donation">うち ¥280 をニコニコ支援金へ</span></div>
+          </div>
+          <button>カートに追加</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右ペイン カート -->
+    <aside class="cart-panel">
+      <h3>🛒 カート (2点)</h3>
+      <div class="cart-item">
+        <span>山梨産 赤ワイン 2022 × 1</span>
+        <span>¥3,800</span>
+      </div>
+      <div class="cart-item">
+        <span>宇治抹茶 詰合せ × 1</span>
+        <span>¥2,500</span>
+      </div>
+      <div class="cart-total">
+        <div class="row">
+          <span>小計</span><span>¥6,300</span>
+        </div>
+        <div class="row donation">
+          <span>うちニコニコ支援金</span><span>¥630</span>
+        </div>
+        <div class="row grand">
+          <span>合計</span><span>¥6,300</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="showScreen('s3', document.querySelectorAll('.screen-switcher button')[2])">購入手続きへ進む</button>
+      <button class="btn-secondary">商品を追加する</button>
+    </aside>
+  </div>
+</main>
+
+<!-- =============== ② 商品詳細 =============== -->
+<main id="s2" class="screen">
+  <h2 class="screen-title">商品詳細</h2>
+  <p class="screen-desc">商品の詳細をご確認の上、カートに追加してください。</p>
+  <div class="detail-grid">
+    <div class="detail-image">🍷</div>
+    <div class="detail-info">
+      <h2>山梨産 赤ワイン 2022</h2>
+      <div class="donor">提供: 佐藤 一郎 会員 (会員番号 #042)</div>
+      <div class="price">¥ 3,800 <span style="font-size:16px;color:var(--text-sub);">(税込)</span></div>
+      <div class="donation-callout">
+        ♥ こちらの商品をご購入いただくと <strong>¥380</strong> がニコニコ支援金として恵比寿ロータリークラブへ寄付されます。
+      </div>
+      <div class="description">
+        山梨県甲州市の小さなワイナリーで丁寧に醸造された一本。フルボディながら飲み口は柔らかく、和食にもよく合います。佐藤会員が長年お付き合いのある生産者から直接ご提供いただきました。
+      </div>
+
+      <label>数量</label>
+      <div class="quantity">
+        <button>－</button><span>1</span><button>＋</button>
+      </div>
+
+      <label style="margin-top: 20px;">寄付者コメント (任意・例会で読み上げ)</label>
+      <textarea rows="3" placeholder="例: いつもお世話になっている佐藤会員から素敵なワインをご提供いただきました。ありがとうございます。"></textarea>
+
+      <div class="actions-row">
+        <button class="btn-primary" onclick="showScreen('s3', document.querySelectorAll('.screen-switcher button')[2])">カートに追加して購入へ</button>
+        <button class="btn-secondary" onclick="showScreen('s1', document.querySelectorAll('.screen-switcher button')[0])">一覧へ戻る</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- =============== ③ カート / 購入確認 =============== -->
+<main id="s3" class="screen">
+  <h2 class="screen-title">購入内容のご確認</h2>
+  <p class="screen-desc">以下の内容でお間違いなければ、購入を確定してください。</p>
+  <div class="confirm-card">
+
+    <div class="section">
+      <div class="section-head"><h3>ご購入商品</h3></div>
+      <div class="confirm-row"><span>山梨産 赤ワイン 2022 × 1</span><span class="money">¥3,800</span></div>
+      <div class="confirm-row"><span>宇治抹茶 詰合せ × 1</span><span class="money">¥2,500</span></div>
+    </div>
+
+    <div class="section">
+      <div class="section-head"><h3>お支払い情報</h3></div>
+      <div class="confirm-row"><span class="label">会員番号</span><span>#128 山田 太郎 様</span></div>
+      <div class="confirm-row"><span class="label">支払い方法</span><span>例会後 まとめて精算 (請求書)</span></div>
+    </div>
+
+    <div class="section">
+      <label>寄付者コメント (例会で読み上げます)</label>
+      <textarea rows="3" placeholder="例: 本日もご縁に感謝。皆様のご活躍をお祈りいたします。">本日もご縁に感謝。佐藤会員の素敵なワインをいただきます。皆様のご活躍をお祈りいたします。</textarea>
+      <div class="comment-box">
+        ♬ プレビュー: 「会員番号128 山田太郎様より一言 ― 本日もご縁に感謝。佐藤会員の素敵なワインをいただきます。皆様のご活躍をお祈りいたします。」
+      </div>
+    </div>
+
+    <div class="section">
+      <div class="confirm-row"><span class="label">商品小計</span><span class="money">¥6,300</span></div>
+      <div class="confirm-row"><span class="label" style="color:var(--rotary-gold-dark);">うちニコニコ支援金</span><span class="donation-cell">¥630</span></div>
+      <div class="confirm-row total"><span>合計</span><span>¥6,300</span></div>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn-primary">この内容で購入を確定する</button>
+      <button class="btn-secondary" onclick="showScreen('s1', document.querySelectorAll('.screen-switcher button')[0])">戻る</button>
+    </div>
+  </div>
+</main>
+
+<!-- =============== ④ 運営: 会員情報入力 =============== -->
+<main id="s4" class="screen">
+  <h2 class="screen-title">[運営用] 会員情報の入力</h2>
+  <p class="screen-desc">会員の方が購入される際の情報を入力してください。</p>
+  <div class="form-card">
+
+    <label>会員を検索 (名前・会員番号)</label>
+    <div class="member-search">
+      <div style="flex:1;">
+        <input type="text" placeholder="例: 山田 / 128" value="やま">
+      </div>
+      <button class="btn-primary" style="margin:0; width:auto; padding: 14px 24px;">検索</button>
+    </div>
+
+    <div class="member-list">
+      <div class="member-item" style="background: var(--rotary-blue-light); border-color: var(--rotary-blue);">
+        <div>
+          <div class="member-name">山田 太郎</div>
+          <div class="member-meta">会員番号 #128 / 入会 2015年 / 所属委員会: 親睦活動</div>
+        </div>
+        <span style="color: var(--rotary-blue); font-weight:bold;">✓ 選択中</span>
+      </div>
+      <div class="member-item">
+        <div>
+          <div class="member-name">山本 健太郎</div>
+          <div class="member-meta">会員番号 #074 / 入会 2008年</div>
+        </div>
+        <span style="color: var(--text-sub);">選択</span>
+      </div>
+      <div class="member-item">
+        <div>
+          <div class="member-name">山下 結衣</div>
+          <div class="member-meta">会員番号 #156 / 入会 2022年</div>
+        </div>
+        <span style="color: var(--text-sub);">選択</span>
+      </div>
+    </div>
+
+    <hr style="margin: 24px 0; border: 0; border-top: 1px solid var(--border);">
+
+    <h3 style="font-size:18px; color:var(--rotary-blue); margin-bottom:12px;">確認・補足情報</h3>
+    <div class="form-row-2">
+      <div>
+        <label>氏名 <span class="required">*</span></label>
+        <input type="text" value="山田 太郎">
+      </div>
+      <div>
+        <label>会員番号 <span class="required">*</span></label>
+        <input type="text" value="128">
+      </div>
+    </div>
+    <div class="form-row-2">
+      <div>
+        <label>電話番号</label>
+        <input type="tel" value="090-1234-5678">
+      </div>
+      <div>
+        <label>メールアドレス</label>
+        <input type="email" value="yamada@example.com">
+      </div>
+    </div>
+
+    <label>支払い方法 <span class="required">*</span></label>
+    <select>
+      <option>例会後 まとめて精算 (請求書)</option>
+      <option>現金</option>
+      <option>クレジットカード</option>
+      <option>銀行振込</option>
+    </select>
+
+    <label>備考</label>
+    <textarea rows="2" placeholder="(任意)"></textarea>
+
+    <div class="actions-row">
+      <button class="btn-primary" onclick="showScreen('s3', document.querySelectorAll('.screen-switcher button')[2])">この会員で購入手続きへ</button>
+      <button class="btn-secondary">新規会員として登録</button>
+    </div>
+  </div>
+</main>
+
+<!-- =============== ⑤ 運営: ダッシュボード =============== -->
+<main id="s5" class="screen">
+  <h2 class="screen-title">[運営用] 売上 / 寄付ダッシュボード</h2>
+  <p class="screen-desc">本日の例会の販売状況と、ニコニコ支援金の累計を確認できます。</p>
+
+  <!-- 統計カード -->
+  <div class="stats-grid">
+    <div class="stat-card blue">
+      <div class="stat-label">本日の売上</div>
+      <div class="stat-value">¥ 324,000</div>
+      <div class="stat-sub">前回比 +18%</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-label">ニコニコ支援金 (本日)</div>
+      <div class="stat-value">¥ 32,400</div>
+      <div class="stat-sub">売上の10%</div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-label">購入件数</div>
+      <div class="stat-value">28 件</div>
+      <div class="stat-sub">会員 21名</div>
+    </div>
+    <div class="stat-card gold">
+      <div class="stat-label">寄付者コメント</div>
+      <div class="stat-value">17 件</div>
+      <div class="stat-sub">例会で読み上げ予定</div>
+    </div>
+  </div>
+
+  <div class="dashboard-grid">
+    <!-- 左: 売上一覧 + 商品登録 -->
+    <div>
+      <div class="panel" style="margin-bottom:24px;">
+        <h3>本日の売上一覧 <button class="small-btn">+ 新規商品を登録</button></h3>
+        <table>
+          <thead>
+            <tr>
+              <th>時刻</th><th>会員</th><th>商品</th><th style="text-align:right;">金額</th><th style="text-align:right;">寄付額</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>13:42</td><td>山田 太郎 #128</td><td>赤ワイン、抹茶</td><td style="text-align:right;" class="money">¥6,300</td><td style="text-align:right;" class="donation-cell">¥630</td></tr>
+            <tr><td>13:35</td><td>佐藤 一郎 #042</td><td>シルクスカーフ</td><td style="text-align:right;" class="money">¥6,800</td><td style="text-align:right;" class="donation-cell">¥680</td></tr>
+            <tr><td>13:28</td><td>鈴木 花子 #073</td><td>水彩画作品</td><td style="text-align:right;" class="money">¥12,000</td><td style="text-align:right;" class="donation-cell">¥1,200</td></tr>
+            <tr><td>13:20</td><td>田中 健一 #015</td><td>純米大吟醸、はちみつ</td><td style="text-align:right;" class="money">¥8,200</td><td style="text-align:right;" class="donation-cell">¥820</td></tr>
+            <tr><td>13:15</td><td>渡辺 雅人 #091</td><td>焼菓子、珈琲豆</td><td style="text-align:right;" class="money">¥4,600</td><td style="text-align:right;" class="donation-cell">¥460</td></tr>
+            <tr><td>13:08</td><td>高橋 美咲 #112</td><td>季節のお花アレンジ</td><td style="text-align:right;" class="money">¥4,500</td><td style="text-align:right;" class="donation-cell">¥450</td></tr>
+            <tr><td>13:02</td><td>伊藤 博文 #008</td><td>赤ワイン × 2</td><td style="text-align:right;" class="money">¥7,600</td><td style="text-align:right;" class="donation-cell">¥760</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="panel">
+        <h3>新規商品登録</h3>
+        <div class="form-row-2">
+          <div>
+            <label>商品名</label>
+            <input type="text" placeholder="例: 山梨産 赤ワイン 2022">
+          </div>
+          <div>
+            <label>価格 (円)</label>
+            <input type="number" placeholder="3800">
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div>
+            <label>提供会員</label>
+            <input type="text" placeholder="会員名 / 会員番号">
+          </div>
+          <div>
+            <label>寄付率 (%)</label>
+            <input type="number" value="10">
+          </div>
+        </div>
+        <label>商品説明</label>
+        <textarea rows="2" placeholder="(任意)"></textarea>
+        <div class="actions-row">
+          <button class="btn-primary">商品を登録する</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 右: ニコニコ支援金 + コメント -->
+    <div>
+      <div class="donation-progress" style="margin-bottom:24px;">
+        <div class="label">♥ ニコニコ支援金 (本日累計)</div>
+        <div class="amount">¥ 32,400</div>
+        <div class="progress-bar"><div class="fill"></div></div>
+        <div class="label">月間目標 ¥50,000 まで あと ¥17,600</div>
+      </div>
+
+      <div class="panel">
+        <h3>寄付者コメント (例会で読み上げ)</h3>
+        <div class="comments-list">
+          <div class="comment-item">
+            <div class="comment-meta">山田 太郎 #128 — 13:42</div>
+            <div class="comment-text">本日もご縁に感謝。佐藤会員の素敵なワインをいただきます。皆様のご活躍をお祈りいたします。</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-meta">佐藤 一郎 #042 — 13:35</div>
+            <div class="comment-text">いつもありがとうございます。引き続き恵比寿ロータリーの発展を願って。</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-meta">鈴木 花子 #073 — 13:28</div>
+            <div class="comment-text">松本会員の素晴らしい作品に出会えました。大切に飾らせていただきます。</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-meta">田中 健一 #015 — 13:20</div>
+            <div class="comment-text">妻の誕生日が近いので。素敵な品を提供いただいた会員の皆様に感謝。</div>
+          </div>
+          <div class="comment-item">
+            <div class="comment-meta">渡辺 雅人 #091 — 13:15</div>
+            <div class="comment-text">例会後の楽しみが増えました。ありがとうございます。</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script>
+  function showScreen(id, btn) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    document.querySelectorAll('.screen-switcher button').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</
